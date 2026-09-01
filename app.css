@@ -198,8 +198,8 @@ body {
   inset: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 12px 14px;
-  padding-bottom: calc(var(--action-bar-height) + var(--tab-bar-height) + var(--safe-bottom) + 16px);
+  padding: 8px 10px;
+  padding-bottom: calc(var(--action-bar-height) + var(--safe-bottom) + 12px);
   opacity: 0;
   transform: translateY(8px);
   pointer-events: none;
@@ -218,11 +218,36 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 14px;
-  margin-bottom: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: border-color 0.3s;
+}
+
+.card.collapsible .card-header {
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0;
+}
+
+.card.collapsible:not(.collapsed) .card-header {
+  margin-bottom: 8px;
+}
+
+.card.collapsible .toggle-arrow {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  transition: transform 0.25s ease;
+}
+
+.card.collapsed .toggle-arrow {
+  transform: rotate(-90deg);
+}
+
+.card.collapsed .card-body {
+  display: none;
 }
 
 .card:hover {
@@ -233,7 +258,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .card-title {
@@ -576,6 +601,55 @@ body {
 .upload-sub {
   font-size: 0.7rem;
   color: var(--text-muted);
+}
+
+/* ── Compact Crop Controls Strip ── */
+.crop-controls-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  margin-bottom: 8px;
+}
+
+.crop-controls-strip .crop-mode-btn {
+  width: auto;
+  padding: 6px 12px;
+  font-size: 0.72rem;
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+.slider-inline-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 220px;
+}
+
+.slider-inline-group label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-label);
+  white-space: nowrap;
+}
+
+.slider-inline-group input[type="range"] {
+  flex: 1;
+}
+
+.slider-inline-group .slider-value {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  font-family: var(--font-mono);
+  min-width: 40px;
+  text-align: right;
 }
 
 /* ── Slider Controls ── */

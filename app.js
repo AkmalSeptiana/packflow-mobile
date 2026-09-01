@@ -220,6 +220,7 @@
 
   function initCollapsibles() {
     const collapsibles = [
+      ['header-resi-info', 'card-resi-info'],
       ['header-telegram', 'card-telegram'],
       ['header-webhook', 'card-webhook'],
       ['header-warehouse', 'card-warehouse'],

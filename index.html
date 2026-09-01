@@ -71,9 +71,9 @@
       <!-- ── Tab 1: Resi Viewer ── -->
       <div class="tab-panel active" id="panel-resi">
 
-        <!-- Resi Info Summary -->
-        <div class="card" id="card-resi-info">
-          <div class="card-header">
+        <!-- Resi Info Summary (Collapsible) -->
+        <div class="card collapsible" id="card-resi-info">
+          <div class="card-header" id="header-resi-info">
             <span class="card-title">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -82,70 +82,78 @@
               </svg>
               Informasi Resi & Pesanan
             </span>
-            <span id="doc-status" class="card-badge badge-blue">
-              <span class="status-dot waiting"></span>Menunggu PDF
-            </span>
-          </div>
-
-          <!-- No. Pesanan (Above No. Resi) -->
-          <div class="form-group">
-            <label class="form-label">No. Pesanan (Auto Deteksi / Manual)</label>
-            <div class="input-with-btn">
-              <input type="text" id="input-order-no" class="form-input mono"
-                placeholder="Otomatis dari PDF / Ketik manual...">
-              <button type="button" class="input-copy-btn" id="btn-copy-order-no" title="Salin No. Pesanan">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-              </button>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span id="doc-status" class="card-badge badge-blue">
+                <span class="status-dot waiting"></span>Menunggu PDF
+              </span>
+              <svg class="toggle-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
             </div>
           </div>
 
-          <!-- No. Resi (Below No. Pesanan) -->
-          <div class="form-group">
-            <label class="form-label">No. Resi (Auto Deteksi / Manual)</label>
-            <div class="input-with-btn">
-              <input type="text" id="input-resi" class="form-input mono" placeholder="Otomatis terdeteksi dari PDF...">
-              <button type="button" class="input-copy-btn" id="btn-copy-resi" title="Salin No. Resi">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-              </button>
+          <div class="card-body" id="body-resi-info">
+            <!-- No. Pesanan -->
+            <div class="form-group">
+              <label class="form-label">No. Pesanan (Auto Deteksi / Manual)</label>
+              <div class="input-with-btn">
+                <input type="text" id="input-order-no" class="form-input mono"
+                  placeholder="Otomatis dari PDF / Ketik manual...">
+                <button type="button" class="input-copy-btn" id="btn-copy-order-no" title="Salin No. Pesanan">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
 
-          <!-- Pelabelan SKU Stamp (Moved below No. Resi) -->
-          <div class="form-group">
-            <label class="form-label">Pelabelan / Label Stamp SKU (Bisa Diubah)</label>
-            <div class="input-with-btn">
-              <input type="text" id="input-custom-label" class="form-input mono"
-                placeholder="Otomatis dari PDF / Ketik manual...">
-              <button type="button" class="input-copy-btn" id="btn-copy-label" title="Salin Pelabelan SKU">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-              </button>
+            <!-- No. Resi -->
+            <div class="form-group">
+              <label class="form-label">No. Resi (Auto Deteksi / Manual)</label>
+              <div class="input-with-btn">
+                <input type="text" id="input-resi" class="form-input mono" placeholder="Otomatis terdeteksi dari PDF...">
+                <button type="button" class="input-copy-btn" id="btn-copy-resi" title="Salin No. Resi">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
 
-          <div class="metrics-row">
-            <div class="metric-box">
-              <span class="metric-label">Gudang</span>
-              <span id="txt-city" class="metric-value val-green" style="font-size:0.75rem">-</span>
+            <!-- Pelabelan SKU Stamp -->
+            <div class="form-group">
+              <label class="form-label">Pelabelan / Label Stamp SKU (Bisa Diubah)</label>
+              <div class="input-with-btn">
+                <input type="text" id="input-custom-label" class="form-input mono"
+                  placeholder="Otomatis dari PDF / Ketik manual...">
+                <button type="button" class="input-copy-btn" id="btn-copy-label" title="Salin Pelabelan SKU">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <div class="metric-box">
-              <span class="metric-label">SKU</span>
-              <span id="txt-total-sku" class="metric-value val-blue">-</span>
-            </div>
-            <div class="metric-box">
-              <span class="metric-label">Qty</span>
-              <span id="txt-total-qty" class="metric-value val-orange">-</span>
+
+            <div class="metrics-row">
+              <div class="metric-box">
+                <span class="metric-label">Gudang</span>
+                <span id="txt-city" class="metric-value val-green" style="font-size:0.75rem">-</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">SKU</span>
+                <span id="txt-total-sku" class="metric-value val-blue">-</span>
+              </div>
+              <div class="metric-box">
+                <span class="metric-label">Qty</span>
+                <span id="txt-total-qty" class="metric-value val-orange">-</span>
+              </div>
             </div>
           </div>
         </div>
@@ -170,34 +178,15 @@
           </div>
         </div>
 
-        <!-- Crop & Stamp Controls -->
-        <div class="card" id="card-crop-controls" style="display:none">
-          <div class="card-header">
-            <span class="card-title">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="6" cy="6" r="3" />
-                <circle cx="6" cy="18" r="3" />
-                <line x1="20" x2="8.12" y1="4" y2="15.88" />
-                <line x1="14.47" x2="20" y1="14.48" y2="20" />
-                <line x1="8.12" x2="12" y1="8.12" y2="12" />
-              </svg>
-              Kontrol Tampilan
-            </span>
-          </div>
-
-          <!-- Crop Toggle -->
+        <!-- Crop Controls Strip (Compact Single Row) -->
+        <div class="crop-controls-strip" id="card-crop-controls" style="display:none">
           <button class="crop-mode-btn active" id="btn-crop-toggle">
             Mode Potong: ON
           </button>
-
-          <!-- Crop Height Slider -->
-          <div class="slider-group">
-            <div class="slider-header">
-              <label>Tinggi Resi (Batas Bawah)</label>
-              <span class="slider-value" id="txt-crop-height-val">54.0%</span>
-            </div>
+          <div class="slider-inline-group">
+            <label>Tinggi Resi:</label>
             <input type="range" id="slider-crop-height" min="30" max="70" step="0.2" value="54.0">
+            <span class="slider-value" id="txt-crop-height-val">54.0%</span>
           </div>
         </div>
 
@@ -431,7 +420,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=12').then(reg => {
+        navigator.serviceWorker.register('sw.js?v=13').then(reg => {
           reg.update();
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;

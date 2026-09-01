@@ -1,4 +1,4 @@
-const CACHE_NAME = 'packflow-mobile-v12';
+const CACHE_NAME = 'packflow-mobile-v13';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
