@@ -160,13 +160,6 @@
             ✂️ Mode Potong: ON
           </button>
 
-          <!-- Zoom Controls (Default 80%) -->
-          <div class="zoom-bar">
-            <button class="zoom-btn" id="btn-zoom-out">−</button>
-            <span class="zoom-label" id="txt-zoom">80%</span>
-            <button class="zoom-btn" id="btn-zoom-in">+</button>
-          </div>
-
           <!-- Crop Height Slider -->
           <div class="slider-group">
             <div class="slider-header">
@@ -412,7 +405,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=8').then(reg => {
+        navigator.serviceWorker.register('sw.js?v=9').then(reg => {
           reg.update();
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;
