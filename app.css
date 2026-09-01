@@ -417,6 +417,12 @@ body {
   line-height: 1.4;
 }
 
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
 .input-row {
   display: flex;
   gap: 8px;

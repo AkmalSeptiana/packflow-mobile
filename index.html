@@ -94,35 +94,36 @@
           </div>
 
           <div class="card-body" id="body-resi-info">
-            <!-- No. Pesanan -->
-            <div class="form-group">
-              <label class="form-label"> No. Pesanan</label>
-              <div class="input-with-btn">
-                <input type="text" id="input-order-no" class="form-input mono"
-                  placeholder="Otomatis dari PDF / Ketik manual...">
-                <button type="button" class="input-copy-btn" id="btn-copy-order-no" title="Salin No. Pesanan">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                </button>
+            <!-- No. Pesanan & No. Resi (Side-by-side row) -->
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label class="form-label">No. Pesanan</label>
+                <div class="input-with-btn">
+                  <input type="text" id="input-order-no" class="form-input mono"
+                    placeholder="Auto / Manual...">
+                  <button type="button" class="input-copy-btn" id="btn-copy-order-no" title="Salin No. Pesanan">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <!-- No. Resi -->
-            <div class="form-group">
-              <label class="form-label"> No. Resi</label>
-              <div class="input-with-btn">
-                <input type="text" id="input-resi" class="form-input mono"
-                  placeholder="Otomatis terdeteksi dari PDF...">
-                <button type="button" class="input-copy-btn" id="btn-copy-resi" title="Salin No. Resi">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                </button>
+              <div class="form-group">
+                <label class="form-label">No. Resi</label>
+                <div class="input-with-btn">
+                  <input type="text" id="input-resi" class="form-input mono"
+                    placeholder="Auto terdeteksi...">
+                  <button type="button" class="input-copy-btn" id="btn-copy-resi" title="Salin No. Resi">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -437,7 +438,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=15').then(reg => {
+        navigator.serviceWorker.register('sw.js?v=16').then(reg => {
           reg.update();
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;
