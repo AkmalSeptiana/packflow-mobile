@@ -1,4 +1,4 @@
-const CACHE_NAME = 'packflow-mobile-v18';
+const CACHE_NAME = 'packflow-mobile-v19';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -38,31 +38,27 @@ self.addEventListener('activate', (event) => {
 
 // Network-First Strategy for Instant Live Updates
 self.addEventListener('fetch', (event) => {
-  // Handle Web Share Target POST requests
+  // Handle Web Share Target POST requests synchronously so file is written before redirect
   if (event.request.method === 'POST' && event.request.url.includes('index.html')) {
-    event.respondWith(Response.redirect('./index.html?share-target', 303));
-
-    event.waitUntil(
+    event.respondWith(
       (async () => {
-        const data = await event.request.formData();
-        const files = data.getAll('pdf');
-        if (files.length > 0) {
-          const file = files[0];
-          // Store the shared file in a temporary cache for the client to pick up
-          const cache = await caches.open('packflow-share-target');
-          await cache.put('/shared-pdf', new Response(file, {
-            headers: {
-              'Content-Type': file.type,
-              'X-Filename': file.name
-            }
-          }));
-
-          // Notify all clients that a file was shared
-          const clients = await self.clients.matchAll({ type: 'window' });
-          for (const client of clients) {
-            client.postMessage({ type: 'share-target-file', filename: file.name });
+        try {
+          const data = await event.request.formData();
+          const files = data.getAll('pdf');
+          if (files.length > 0) {
+            const file = files[0];
+            const cache = await caches.open('packflow-share-target');
+            await cache.put('/shared-pdf', new Response(file, {
+              headers: {
+                'Content-Type': file.type || 'application/pdf',
+                'X-Filename': encodeURIComponent(file.name || 'shared.pdf')
+              }
+            }));
           }
+        } catch (err) {
+          console.error('[SW Share Target Error]', err);
         }
+        return Response.redirect('./index.html?share-target=' + Date.now(), 303);
       })()
     );
     return;

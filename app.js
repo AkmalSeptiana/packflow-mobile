@@ -102,7 +102,6 @@
 
   // ── Web Share Target Receiver ──
   async function checkSharedFile() {
-    // Listen for messages from service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data && event.data.type === 'share-target-file') {
@@ -111,29 +110,28 @@
       });
     }
 
-    // Also check on load if URL has share-target param
     if (window.location.search.includes('share-target')) {
-      // Small delay to let SW finish writing the cache
-      setTimeout(() => loadSharedPdfFromCache(), 500);
+      loadSharedPdfFromCache();
     }
   }
 
-  async function loadSharedPdfFromCache() {
+  async function loadSharedPdfFromCache(retryCount = 0) {
     try {
       const cache = await caches.open('packflow-share-target');
       const response = await cache.match('/shared-pdf');
       if (response) {
-        const filename = response.headers.get('X-Filename') || 'shared.pdf';
+        const rawFilename = response.headers.get('X-Filename') || 'shared.pdf';
+        const filename = decodeURIComponent(rawFilename);
         setDocStatus('loading', `Memuat: ${filename}...`);
         showToast(`📂 Menerima: ${filename}`, 'success');
         const buffer = await response.arrayBuffer();
         loadPdfFromBuffer(new Uint8Array(buffer));
-        // Clean up the shared file cache
         await cache.delete('/shared-pdf');
-        // Clean URL params
         if (window.history.replaceState) {
           window.history.replaceState({}, '', './index.html');
         }
+      } else if (retryCount < 10) {
+        setTimeout(() => loadSharedPdfFromCache(retryCount + 1), 250);
       }
     } catch (err) {
       console.error('[PackFlow] Share target load error:', err);
@@ -993,10 +991,23 @@
         }
 
         // 2. Order Number Auto Detection
-        const orderMatch = fullText.match(/(?:No\.?\s*Pesanan|Order\s*ID)[:\s]*([A-Z0-9]+)/i);
-        if (orderMatch) {
-          parsedData.orderNo = orderMatch[1];
-          if (inputOrderNo) inputOrderNo.value = parsedData.orderNo;
+        let orderFound = '';
+        const orderMatch = fullText.match(/(?:No\.?\s*Pesanan|Order\s*ID|No\.?\s*Order|ID\s*Pesanan)[:\s#]*([A-Z0-9]{10,25})/i);
+        if (orderMatch && orderMatch[1]) {
+          orderFound = orderMatch[1].trim();
+        }
+
+        // Fallback for Shopee order numbers (e.g. 260828HMJJYAXJ, 260901USA40NCB)
+        if (!orderFound) {
+          const shopeeOrderMatch = fullText.match(/\b(2[4-9]\d{4}[A-Z0-9]{7,14})\b/);
+          if (shopeeOrderMatch) {
+            orderFound = shopeeOrderMatch[1].trim();
+          }
+        }
+
+        if (orderFound) {
+          parsedData.orderNo = orderFound;
+          if (inputOrderNo) inputOrderNo.value = orderFound;
         }
 
         // 3. City Extraction
