@@ -603,55 +603,6 @@ body {
   color: var(--text-muted);
 }
 
-/* ── Compact Crop Controls Strip ── */
-.crop-controls-strip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 8px 12px;
-  margin-bottom: 8px;
-}
-
-.crop-controls-strip .crop-mode-btn {
-  width: auto;
-  padding: 6px 12px;
-  font-size: 0.72rem;
-  margin-bottom: 0;
-  white-space: nowrap;
-}
-
-.slider-inline-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  max-width: 220px;
-}
-
-.slider-inline-group label {
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: var(--text-label);
-  white-space: nowrap;
-}
-
-.slider-inline-group input[type="range"] {
-  flex: 1;
-}
-
-.slider-inline-group .slider-value {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--accent-blue);
-  font-family: var(--font-mono);
-  min-width: 40px;
-  text-align: right;
-}
-
 /* ── Slider Controls ── */
 .slider-group {
   margin-bottom: 12px;
@@ -1259,22 +1210,21 @@ body.settings-active .action-bar {
 
 /* ── Crop Mode Toggle ── */
 .crop-mode-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--radius-md);
+  padding: 5px 11px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-subtle);
   background: var(--bg-glass);
   color: var(--text-secondary);
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 600;
   font-family: var(--font-family);
   cursor: pointer;
   transition: all 0.2s;
-  width: 100%;
-  justify-content: center;
-  margin-bottom: 12px;
+  width: auto;
+  white-space: nowrap;
 }
 
 .crop-mode-btn.active {
@@ -1284,7 +1234,7 @@ body.settings-active .action-bar {
 }
 
 .crop-mode-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.95);
 }
 
 /* ── Responsive Enhancements ── */
