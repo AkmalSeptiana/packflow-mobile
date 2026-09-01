@@ -173,10 +173,16 @@
       });
     });
 
-    // Top-right Resi tab shortcut button
-    const btnHeaderResiTab = document.getElementById('btn-header-resi-tab');
-    if (btnHeaderResiTab) {
-      btnHeaderResiTab.addEventListener('click', () => switchTab('resi'));
+    // Header Settings gear button shortcut
+    const btnHeaderSettings = document.getElementById('btn-header-settings');
+    if (btnHeaderSettings) {
+      btnHeaderSettings.addEventListener('click', () => switchTab('settings'));
+    }
+
+    // Header Logo/Title click to return to Resi workspace
+    const headerBrandLogo = document.getElementById('header-brand-logo');
+    if (headerBrandLogo) {
+      headerBrandLogo.addEventListener('click', () => switchTab('resi'));
     }
   }
 
