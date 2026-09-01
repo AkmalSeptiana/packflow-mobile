@@ -147,36 +147,64 @@
   }
 
   // ══════════════════════════════════════════════════════════
-  //  TAB NAVIGATION
+  //  TAB NAVIGATION & VIEW SWITCHING
   // ══════════════════════════════════════════════════════════
 
+  let currentTab = 'resi';
+
+  function switchTab(tabId) {
+    currentTab = tabId;
+    const panelResi = document.getElementById('panel-resi');
+    const panelSettings = document.getElementById('panel-settings');
+    const btnHeaderSettings = document.getElementById('btn-header-settings');
+
+    if (tabId === 'settings') {
+      if (panelResi) panelResi.classList.remove('active');
+      if (panelSettings) panelSettings.classList.add('active');
+      if (btnHeaderSettings) btnHeaderSettings.classList.add('active');
+      document.body.classList.add('settings-active');
+    } else {
+      if (panelSettings) panelSettings.classList.remove('active');
+      if (panelResi) panelResi.classList.add('active');
+      if (btnHeaderSettings) btnHeaderSettings.classList.remove('active');
+      document.body.classList.remove('settings-active');
+    }
+  }
+
+  function saveAllSettings() {
+    if (inputTgBotToken) localStorage.setItem('packflow_m_tg_token', inputTgBotToken.value.trim());
+    if (inputTgChatId) localStorage.setItem('packflow_m_tg_chat', inputTgChatId.value.trim());
+    if (inputWebhookUrl) localStorage.setItem('packflow_m_webhook', inputWebhookUrl.value.trim());
+    if (inputDefaultShopName) localStorage.setItem('packflow_m_shop_name', inputDefaultShopName.value.trim());
+    if (inputSuffix) localStorage.setItem('packflow_m_suffix', inputSuffix.value.trim());
+    if (inputWarehouseAliases) localStorage.setItem('packflow_m_warehouse_aliases', inputWarehouseAliases.value.trim());
+
+    // Re-apply label stamp
+    buildLabelStamp();
+    showToast('✅ Pengaturan disimpan!', 'success');
+  }
+
   function initTabNavigation() {
-    const tabItems = document.querySelectorAll('.tab-item');
-    const panels = document.querySelectorAll('.tab-panel');
-
-    function switchTab(tabId) {
-      tabItems.forEach(t => {
-        if (t.getAttribute('data-tab') === tabId) t.classList.add('active');
-        else t.classList.remove('active');
-      });
-
-      panels.forEach(p => {
-        if (p.id === `panel-${tabId}`) p.classList.add('active');
-        else p.classList.remove('active');
+    // Header Settings gear button toggle
+    const btnHeaderSettings = document.getElementById('btn-header-settings');
+    if (btnHeaderSettings) {
+      btnHeaderSettings.addEventListener('click', () => {
+        if (currentTab === 'settings') {
+          saveAllSettings();
+          switchTab('resi');
+        } else {
+          switchTab('settings');
+        }
       });
     }
 
-    tabItems.forEach(item => {
-      item.addEventListener('click', () => {
-        const tabId = item.getAttribute('data-tab');
-        switchTab(tabId);
+    // Save & Return Button at bottom of Settings
+    const btnSaveSettings = document.getElementById('btn-save-settings');
+    if (btnSaveSettings) {
+      btnSaveSettings.addEventListener('click', () => {
+        saveAllSettings();
+        switchTab('resi');
       });
-    });
-
-    // Header Settings gear button shortcut
-    const btnHeaderSettings = document.getElementById('btn-header-settings');
-    if (btnHeaderSettings) {
-      btnHeaderSettings.addEventListener('click', () => switchTab('settings'));
     }
 
     // Header Logo/Title click to return to Resi workspace
