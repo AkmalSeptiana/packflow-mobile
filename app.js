@@ -877,12 +877,12 @@
 
     const btnPrint = document.getElementById('btn-print');
     if (btnPrint) {
-      btnPrint.addEventListener('click', async () => {
+      btnPrint.addEventListener('click', () => {
         if (actionBar && actionBar.classList.contains('disabled')) {
           showToast('⚠️ Silakan buka file PDF resi terlebih dahulu', 'error');
           return;
         }
-        await generateCompactPdf();
+        window.print();
       });
     }
 
