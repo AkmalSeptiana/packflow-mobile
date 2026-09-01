@@ -296,16 +296,177 @@
         input.addEventListener('change', (e) => {
           const file = e.target.files[0];
           if (file) {
-            setDocStatus('loading', `Memuat: ${file.name}...`);
-            const reader = new FileReader();
-            reader.onload = function () {
-              loadPdfFromBuffer(new Uint8Array(this.result));
-            };
-            reader.readAsArrayBuffer(file);
+            if (file.type.startsWith('image/') || file.name.match(/\.(png|jpe?g|webp|bmp|gif)$/i)) {
+              loadImageFromFile(file);
+            } else {
+              setDocStatus('loading', `Memuat: ${file.name}...`);
+              const reader = new FileReader();
+              reader.onload = function () {
+                loadPdfFromBuffer(new Uint8Array(this.result));
+              };
+              reader.readAsArrayBuffer(file);
+            }
           }
         });
       }
     });
+  }
+
+  function loadImageFromFile(file) {
+    setDocStatus('loading', `Memuat Screenshot: ${file.name}...`);
+    showToast(`📸 Memuat Screenshot: ${file.name}`, 'info');
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const img = new Image();
+      img.onload = function () {
+        currentPdfDoc = null; // reset PDF doc
+
+        if (uploadArea) uploadArea.style.display = 'none';
+        if (viewerContainer) viewerContainer.style.display = 'block';
+        if (viewerEmpty) viewerEmpty.style.display = 'none';
+        if (canvasScroll) canvasScroll.style.display = 'block';
+        if (cardCropControls) cardCropControls.style.display = 'block';
+
+        pdfCanvas.width = img.width;
+        pdfCanvas.height = img.height;
+        const ctx = pdfCanvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        if (canvasWrapper) {
+          let availableWidth = 340;
+          if (canvasScroll && canvasScroll.clientWidth > 40) {
+            availableWidth = canvasScroll.clientWidth - 12;
+          }
+          const scale = availableWidth / img.width;
+          canvasWrapper.style.width = `${Math.round(availableWidth)}px`;
+          canvasWrapper.style.height = `${Math.round(img.height * scale)}px`;
+          pdfCanvas.style.width = '100%';
+          pdfCanvas.style.height = '100%';
+        }
+
+        updateActionBarState();
+        extractTextFromImage(pdfCanvas);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function extractTextFromImage(canvas) {
+    if (typeof Tesseract === 'undefined') {
+      showToast('⚠️ Tesseract OCR belum siap', 'error');
+      setDocStatus('ready', 'Gambar Siap (Tanpa OCR)');
+      return;
+    }
+
+    setDocStatus('loading', '🔍 OCR Membaca Teks Gambar...');
+    showToast('🔍 Membaca data resi dari Screenshot...', 'info');
+
+    try {
+      const result = await Tesseract.recognize(canvas, 'eng+ind', {
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            const pct = Math.round((m.progress || 0) * 100);
+            setDocStatus('loading', `🔍 OCR Membaca: ${pct}%`);
+          }
+        }
+      });
+
+      const fullText = result && result.data && result.data.text ? result.data.text : '';
+      console.log('[PackFlow OCR Text]:', fullText);
+
+      parsedData = {
+        resiNo: '',
+        orderNo: '',
+        cityName: '',
+        items: [],
+        totalQty: 0,
+        generatedLabel: ''
+      };
+
+      // 1. Auto Resi Detection
+      const detectedResi = detectResiNumber(fullText);
+      if (detectedResi) {
+        parsedData.resiNo = detectedResi;
+        if (inputResi) inputResi.value = detectedResi;
+      }
+
+      // 2. Order Number Auto Detection
+      let orderFound = '';
+      const orderMatch = fullText.match(/(?:No\.?\s*Pesanan|Order\s*ID|No\.?\s*Order|ID\s*Pesanan)[:\s#]*([A-Z0-9]{10,25})/i);
+      if (orderMatch && orderMatch[1]) {
+        orderFound = orderMatch[1].trim();
+      }
+
+      if (!orderFound) {
+        const shopeeOrderMatch = fullText.match(/\b(2[4-9]\d{4}[A-Z0-9]{7,14})\b/);
+        if (shopeeOrderMatch) {
+          orderFound = shopeeOrderMatch[1].trim();
+        }
+      }
+
+      if (orderFound) {
+        parsedData.orderNo = orderFound;
+        if (inputOrderNo) inputOrderNo.value = orderFound;
+      }
+
+      // 3. City Detection
+      let cityFound = '';
+      const cityRegexes = [
+        /(?:KOTA|KAB\.?|KABUPATEN)\s+[A-Z\s.-]+?(?=\s*\d{5,}|\s*\(|\s*62|\s*08|\s*$|\s*PENGIRIM|\s*PENERIMA|\s*ECO|\s*REG|\s*COD|\s*SPX|\s*WAJIB)/i,
+        /\b((?:KOTA|KAB\.|KABUPATEN)\s+[A-Z]+(?:\s+[A-Z]+)?)/i
+      ];
+
+      for (const rg of cityRegexes) {
+        const m = fullText.match(rg);
+        if (m) {
+          const cleaned = cleanCityName(m[0] || m[1]);
+          if (cleaned && cleaned !== '-') { cityFound = cleaned; break; }
+        }
+      }
+
+      parsedData.cityName = mapWarehouseAlias(cityFound || 'KOTA');
+
+      // 4. SKU Matching
+      const upperFullText = fullText.toUpperCase();
+      const activeWhitelist = getWhitelist();
+      const activeIgnored = getIgnored();
+
+      const lines = upperFullText.split(/\r?\n/);
+      lines.forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+        if (activeIgnored.some(ig => trimmed.includes(ig))) return;
+
+        activeWhitelist.forEach(wl => {
+          if (trimmed.includes(wl)) {
+            let qty = 1;
+            const qtyMatch = trimmed.match(/(\d+)\s*X|QTY\s*:\s*(\d+)|^(\d+)\s*[-_]/);
+            if (qtyMatch) {
+              qty = parseInt(qtyMatch[1] || qtyMatch[2] || qtyMatch[3]) || 1;
+            }
+
+            const existing = parsedData.items.find(item => item.sku === wl);
+            if (existing) {
+              existing.qty += qty;
+            } else {
+              parsedData.items.push({ sku: wl, name: trimmed, qty: qty });
+            }
+            parsedData.totalQty += qty;
+          }
+        });
+      });
+
+      updateSidebarUI();
+      setDocStatus('ready', 'Gambar & OCR Siap');
+      showToast('✅ Berhasil membaca data dari Screenshot!', 'success');
+
+    } catch (err) {
+      console.error('[PackFlow OCR Error]:', err);
+      setDocStatus('ready', 'Gambar Siap (Gagal OCR)');
+      showToast('⚠️ Gagal membaca teks otomatis dari gambar', 'error');
+    }
   }
 
   function loadPdfFromBuffer(buffer) {

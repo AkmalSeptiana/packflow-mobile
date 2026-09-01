@@ -24,8 +24,9 @@
   <link rel="icon" href="icons/icon48.png" type="image/png">
   <link rel="apple-touch-icon" href="icons/icon128.png">
 
-  <!-- PDF.js -->
+  <!-- PDF.js & Tesseract.js OCR -->
   <script src="pdf.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 
 <body>
@@ -62,7 +63,7 @@
       </div>
 
       <!-- Hidden File Input -->
-      <input type="file" id="file-input" accept="application/pdf" style="display:none">
+      <input type="file" id="file-input" accept="application/pdf,image/*" style="display:none">
     </header>
 
     <!-- ═══════ Tab Content Area ═══════ -->
@@ -158,10 +159,10 @@
 
         <!-- Upload Area (positioned below Informasi Resi) -->
         <div class="upload-area" id="upload-area">
-          <input type="file" id="file-input-main" accept="application/pdf">
-          <span class="upload-icon">📄</span>
-          <div class="upload-title">Ketuk untuk buka file PDF Resi</div>
-          <div class="upload-sub">Pilih dari File Manager atau Download</div>
+          <input type="file" id="file-input-main" accept="application/pdf,image/*">
+          <span class="upload-icon">📸 / 📄</span>
+          <div class="upload-title">Ketuk Buka PDF Resi atau Screenshot Gambar</div>
+          <div class="upload-sub">Mendukung PDF Resi & Tangkapan Layar (PNG/JPG)</div>
         </div>
 
         <!-- PDF Viewer Canvas -->
@@ -434,7 +435,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=22').then(reg => {
+        navigator.serviceWorker.register('sw.js?v=23').then(reg => {
           reg.update();
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;
