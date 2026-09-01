@@ -436,21 +436,28 @@ body {
 
 .canvas-scroll {
   width: 100%;
-  overflow: auto;
-  max-height: 50vh;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-height: 60vh;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 4px 0;
   -webkit-overflow-scrolling: touch;
 }
 
 .canvas-wrapper {
   position: relative;
-  display: inline-block;
+  display: block;
+  margin: 0 auto;
+  flex-shrink: 0;
   container-type: inline-size;
 }
 
 .canvas-wrapper canvas {
   display: block;
-  max-width: 100%;
+  width: 100%;
   height: auto;
 }
 

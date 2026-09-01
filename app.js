@@ -14,7 +14,7 @@
 
   // ── State ──
   let currentPdfDoc = null;
-  let currentScale = 1.4; // Base scale for 80% zoom display
+  let zoomLevelPct = 100; // Default 100% = Auto-fit label width to mobile screen
   let isCropped = true;
 
   const savedBottomRatio = parseFloat(localStorage.getItem('packflow_m_crop_bottom'));
@@ -322,12 +322,12 @@
       });
     }
 
-    // Zoom (Base 1.4 scale = 80% default zoom display)
-    let zoomLevelPct = 80;
+    // Zoom controls (Default 100% = Auto-fit width to mobile screen)
+    if (txtZoom) txtZoom.textContent = `${zoomLevelPct}%`;
+
     if (btnZoomIn) {
       btnZoomIn.addEventListener('click', () => {
         zoomLevelPct = Math.min(200, zoomLevelPct + 10);
-        currentScale = 1.4 * (zoomLevelPct / 80);
         if (txtZoom) txtZoom.textContent = `${zoomLevelPct}%`;
         renderPdfPage();
       });
@@ -335,7 +335,6 @@
     if (btnZoomOut) {
       btnZoomOut.addEventListener('click', () => {
         zoomLevelPct = Math.max(40, zoomLevelPct - 10);
-        currentScale = 1.4 * (zoomLevelPct / 80);
         if (txtZoom) txtZoom.textContent = `${zoomLevelPct}%`;
         renderPdfPage();
       });
@@ -830,16 +829,40 @@
   }
 
   // ══════════════════════════════════════════════════════════
-  //  PDF RENDER ENGINE
+  //  PDF RENDER ENGINE (Auto-Fit Mobile Screen Width)
   // ══════════════════════════════════════════════════════════
 
   function renderPdfPage() {
     if (!currentPdfDoc) return;
 
     currentPdfDoc.getPage(1).then(page => {
-      // Use HD high-DPI scaling factor for ultra sharp text and barcodes on mobile screens
+      // Available width in container
+      let availableWidth = 340;
+      if (canvasScroll && canvasScroll.clientWidth > 40) {
+        availableWidth = canvasScroll.clientWidth - 12;
+      }
+
+      // Unscaled page dimensions in points (72dpi)
+      const unscaledViewport = page.getViewport({ scale: 1.0 });
+
+      let labelPtW = unscaledViewport.width;
+      let labelPtH = unscaledViewport.height;
+
+      if (isCropped) {
+        labelPtW = (cropConfig.rightRatio - cropConfig.leftRatio) * unscaledViewport.width;
+        labelPtH = (cropConfig.bottomRatio - cropConfig.topRatio) * unscaledViewport.height;
+      }
+
+      // Base scale so the label width fits available container width 100%
+      const fitScale = availableWidth / labelPtW;
+      const userZoomFactor = (typeof zoomLevelPct !== 'undefined' ? zoomLevelPct : 100) / 100;
+
+      const finalCssW = availableWidth * userZoomFactor;
+      const finalCssH = (labelPtH * fitScale) * userZoomFactor;
+
+      // HD Ultra Sharp rendering scale (High DPI DPR)
       const dpr = Math.max(window.devicePixelRatio || 1, 2.5);
-      const renderScale = currentScale * dpr;
+      const renderScale = fitScale * userZoomFactor * dpr;
 
       const viewport = page.getViewport({ scale: renderScale });
       const tempCanvas = document.createElement('canvas');
@@ -851,9 +874,9 @@
       tempCtx.imageSmoothingQuality = 'high';
 
       page.render({ canvasContext: tempCtx, viewport }).promise.then(() => {
+        let cropX = 0, cropY = 0;
         let finalW = viewport.width;
         let finalH = viewport.height;
-        let cropX = 0, cropY = 0;
 
         if (isCropped) {
           cropX = cropConfig.leftRatio * viewport.width;
@@ -862,7 +885,7 @@
           finalH = (cropConfig.bottomRatio - cropConfig.topRatio) * viewport.height;
         }
 
-        // Internal canvas resolution (High DPI HD)
+        // Internal high resolution canvas dimensions
         pdfCanvas.width = finalW;
         pdfCanvas.height = finalH;
 
@@ -873,17 +896,18 @@
         ctx.drawImage(tempCanvas, cropX, cropY, finalW, finalH, 0, 0, finalW, finalH);
 
         if (canvasWrapper) {
-          // Display width/height in CSS pixels (sharp downscaling)
-          const displayW = finalW / dpr;
-          const displayH = finalH / dpr;
-          canvasWrapper.style.width = `${Math.round(displayW)}px`;
-          canvasWrapper.style.height = `${Math.round(displayH)}px`;
+          canvasWrapper.style.width = `${Math.round(finalCssW)}px`;
+          canvasWrapper.style.height = `${Math.round(finalCssH)}px`;
           pdfCanvas.style.width = '100%';
           pdfCanvas.style.height = '100%';
         }
       }).catch(err => console.error('Render error:', err));
     });
   }
+
+  window.addEventListener('resize', () => {
+    if (currentPdfDoc) renderPdfPage();
+  });
 
   // ══════════════════════════════════════════════════════════
   //  COMPOSITE CANVAS (Canvas + Stamp Overlay)
