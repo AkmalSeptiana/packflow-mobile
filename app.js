@@ -22,7 +22,7 @@
     topRatio: 0.0,
     bottomRatio: !isNaN(savedBottomRatio) ? savedBottomRatio : 0.54,
     leftRatio: 0.0,
-    rightRatio: 0.52
+    rightRatio: 0.498
   };
 
   // ── SKU Whitelist & Ignored ──
