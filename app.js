@@ -632,9 +632,9 @@
   async function generateCompactPdf() {
     if (!pdfCanvas) { showToast('⚠️ Tidak ada resi untuk di-print', 'error'); return; }
 
-    showToast('⏳ Membuat PDF resi...', 'info');
+    showToast('⏳ Membuat PDF Super Compact (<80KB)...', 'info');
 
-    // Create a composite canvas: resi + stamp overlay
+    // 1. Create a composite canvas: resi + stamp overlay
     const compositeCanvas = document.createElement('canvas');
     compositeCanvas.width = pdfCanvas.width;
     compositeCanvas.height = pdfCanvas.height;
@@ -649,13 +649,11 @@
       const stampRect = stampOverlay.getBoundingClientRect();
       const canvasRect = pdfCanvas.getBoundingClientRect();
 
-      // Calculate stamp position relative to canvas
       const scaleX = pdfCanvas.width / canvasRect.width;
       const scaleY = pdfCanvas.height / canvasRect.height;
       const stampX = (stampRect.left - canvasRect.left) * scaleX;
       const stampY = (stampRect.top - canvasRect.top) * scaleY;
 
-      // Get stamp computed style
       const stampStyle = window.getComputedStyle(stampText);
       const fontSizePx = parseFloat(stampStyle.fontSize) * scaleX;
 
@@ -663,47 +661,58 @@
       ctx.font = `900 ${fontSizePx}px ${stampStyle.fontFamily}`;
       ctx.textBaseline = 'top';
 
-      // White outline
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = fontSizePx * 0.12;
       ctx.lineJoin = 'round';
       ctx.strokeText(stampText.textContent, stampX, stampY);
 
-      // Red text
       ctx.fillStyle = '#dc2626';
       ctx.fillText(stampText.textContent, stampX, stampY);
       ctx.restore();
     }
 
-    // Convert to compressed JPEG blob
-    const jpegQuality = 0.55; // Start with moderate quality
-    let blob = await new Promise(resolve => compositeCanvas.toBlob(resolve, 'image/jpeg', jpegQuality));
-
-    // If still too large, reduce quality further
-    if (blob.size > 80000) {
-      blob = await new Promise(resolve => compositeCanvas.toBlob(resolve, 'image/jpeg', 0.40));
+    // 2. Scale down composite canvas to max width 900px for ultra-efficient PDF size
+    let targetCanvas = compositeCanvas;
+    const MAX_W = 900;
+    if (compositeCanvas.width > MAX_W) {
+      const scale = MAX_W / compositeCanvas.width;
+      const small = document.createElement('canvas');
+      small.width = MAX_W;
+      small.height = Math.round(compositeCanvas.height * scale);
+      const sCtx = small.getContext('2d');
+      sCtx.imageSmoothingEnabled = true;
+      sCtx.imageSmoothingQuality = 'high';
+      sCtx.drawImage(compositeCanvas, 0, 0, small.width, small.height);
+      targetCanvas = small;
     }
-    if (blob.size > 80000) {
-      blob = await new Promise(resolve => compositeCanvas.toBlob(resolve, 'image/jpeg', 0.30));
+
+    // 3. Compress JPEG adaptively under 80KB (80,000 bytes)
+    let quality = 0.50;
+    let blob = await new Promise(resolve => targetCanvas.toBlob(resolve, 'image/jpeg', quality));
+
+    if (blob.size > 75000) {
+      quality = 0.35;
+      blob = await new Promise(resolve => targetCanvas.toBlob(resolve, 'image/jpeg', quality));
+    }
+    if (blob.size > 75000) {
+      quality = 0.25;
+      blob = await new Promise(resolve => targetCanvas.toBlob(resolve, 'image/jpeg', quality));
     }
 
-    // A5 dimensions in points (1 pt = 1/72 inch)
-    const A5_W = 419.53; // 148mm
-    const A5_H = 595.28; // 210mm
+    // 4. A5 dimensions (148mm × 210mm = 419.53pt × 595.28pt)
+    const A5_W = 419.53;
+    const A5_H = 595.28;
 
-    // Build a minimal PDF manually (no library needed)
     const imgData = await blobToBase64(blob);
-    const imgWidth = compositeCanvas.width;
-    const imgHeight = compositeCanvas.height;
+    const imgWidth = targetCanvas.width;
+    const imgHeight = targetCanvas.height;
 
-    // Fit image to A5 width with padding
-    const padding = 14; // 14pt padding on sides
+    // Fit image to A5 page width with minimal 8pt padding for maximum visual size
+    const padding = 8;
     const availW = A5_W - padding * 2;
     const scale = availW / imgWidth;
     const scaledW = imgWidth * scale;
     const scaledH = imgHeight * scale;
-
-    // Center vertically
     const offsetY = Math.max(padding, (A5_H - scaledH) / 2);
 
     const pdfBytes = buildMinimalPdf(imgData, imgWidth, imgHeight, A5_W, A5_H, padding, offsetY, scaledW, scaledH);
@@ -713,31 +722,22 @@
     const label = (inputCustomLabel && inputCustomLabel.value.trim()) || '';
     const fileName = label ? `${resi}_${label}.pdf` : `${resi}.pdf`;
 
-    // Download or share
     const fileBlob = new Blob([pdfBytes], { type: 'application/pdf' });
     const fileSizeKB = (fileBlob.size / 1024).toFixed(1);
 
-    if (navigator.share && navigator.canShare) {
-      const file = new File([fileBlob], fileName, { type: 'application/pdf' });
-      if (navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: 'Resi PackFlow' });
-          showToast(`📤 PDF dibagikan (${fileSizeKB} KB)`, 'success');
-          return;
-        } catch (e) {
-          if (e.name === 'AbortError') return; // User cancelled
-        }
-      }
-    }
+    // Save PDF file (<80KB) to device
+    const pdfUrl = URL.createObjectURL(fileBlob);
+    const downloadLink = document.createElement('a');
+    downloadLink.href = pdfUrl;
+    downloadLink.download = fileName;
+    downloadLink.click();
 
-    // Fallback: download
-    const url = URL.createObjectURL(fileBlob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast(`📥 PDF disimpan (${fileSizeKB} KB)`, 'success');
+    showToast(`📥 File PDF (${fileSizeKB} KB) tersimpan di HP!`, 'success');
+
+    // Also trigger system print dialog for web print
+    setTimeout(() => {
+      window.print();
+    }, 400);
   }
 
   function blobToBase64(blob) {
@@ -877,12 +877,12 @@
 
     const btnPrint = document.getElementById('btn-print');
     if (btnPrint) {
-      btnPrint.addEventListener('click', () => {
+      btnPrint.addEventListener('click', async () => {
         if (actionBar && actionBar.classList.contains('disabled')) {
           showToast('⚠️ Silakan buka file PDF resi terlebih dahulu', 'error');
           return;
         }
-        window.print();
+        await generateCompactPdf();
       });
     }
 
