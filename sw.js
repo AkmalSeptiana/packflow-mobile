@@ -1,9 +1,9 @@
-const CACHE_NAME = 'packflow-mobile-v16';
+const CACHE_NAME = 'packflow-mobile-v17';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './app.css',
-  './app.js',
+  './app.css?v=17',
+  './app.js?v=17',
   './pdf.js',
   './pdf.worker.js',
   './manifest.webmanifest',

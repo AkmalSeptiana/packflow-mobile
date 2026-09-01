@@ -17,7 +17,7 @@
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="app.css?v=17">
 
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.webmanifest">
@@ -95,7 +95,7 @@
 
           <div class="card-body" id="body-resi-info">
             <!-- No. Pesanan & No. Resi (Side-by-side row) -->
-            <div class="form-row-2col">
+            <div class="form-row-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
               <div class="form-group">
                 <label class="form-label">No. Pesanan</label>
                 <div class="input-with-btn">
@@ -438,7 +438,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=16').then(reg => {
+        navigator.serviceWorker.register('sw.js?v=17').then(reg => {
           reg.update();
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;
@@ -456,7 +456,7 @@
       });
     }
   </script>
-  <script src="app.js"></script>
+  <script src="app.js?v=17"></script>
 </body>
 
 </html>
