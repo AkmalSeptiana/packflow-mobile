@@ -401,6 +401,49 @@ body {
   flex: 1;
 }
 
+.input-with-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-with-btn .form-input {
+  padding-right: 44px;
+}
+
+.input-copy-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-label);
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 2;
+}
+
+.input-copy-btn:active {
+  transform: translateY(-50%) scale(0.9);
+  background: var(--accent-blue-glow);
+  color: var(--accent-blue);
+  border-color: var(--accent-blue);
+}
+
+.input-copy-btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
 /* ── PDF Viewer Canvas ── */
 .viewer-container {
   background: var(--bg-input);

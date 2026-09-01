@@ -45,8 +45,8 @@
       <!-- Right: Open File (Folder) + Setting (Gear) -->
       <div class="header-actions">
         <button id="btn-header-upload" class="header-icon-btn" title="Buka File PDF">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <path
               d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />
           </svg>
@@ -90,13 +90,48 @@
           <!-- No. Pesanan (Above No. Resi) -->
           <div class="form-group">
             <label class="form-label">No. Pesanan (Auto Deteksi / Manual)</label>
-            <input type="text" id="input-order-no" class="form-input mono" placeholder="Otomatis dari PDF / Ketik manual...">
+            <div class="input-with-btn">
+              <input type="text" id="input-order-no" class="form-input mono"
+                placeholder="Otomatis dari PDF / Ketik manual...">
+              <button type="button" class="input-copy-btn" id="btn-copy-order-no" title="Salin No. Pesanan">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <!-- No. Resi (Below No. Pesanan) -->
           <div class="form-group">
             <label class="form-label">No. Resi (Auto Deteksi / Manual)</label>
-            <input type="text" id="input-resi" class="form-input mono" placeholder="Otomatis terdeteksi dari PDF...">
+            <div class="input-with-btn">
+              <input type="text" id="input-resi" class="form-input mono" placeholder="Otomatis terdeteksi dari PDF...">
+              <button type="button" class="input-copy-btn" id="btn-copy-resi" title="Salin No. Resi">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Pelabelan SKU Stamp (Moved below No. Resi) -->
+          <div class="form-group">
+            <label class="form-label">Pelabelan / Label Stamp SKU (Bisa Diubah)</label>
+            <div class="input-with-btn">
+              <input type="text" id="input-custom-label" class="form-input mono"
+                placeholder="Otomatis dari PDF / Ketik manual...">
+              <button type="button" class="input-copy-btn" id="btn-copy-label" title="Salin Pelabelan SKU">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div class="metrics-row">
@@ -153,7 +188,7 @@
 
           <!-- Crop Toggle -->
           <button class="crop-mode-btn active" id="btn-crop-toggle">
-            ✂️ Mode Potong: ON
+            Mode Potong: ON
           </button>
 
           <!-- Crop Height Slider -->
@@ -163,12 +198,6 @@
               <span class="slider-value" id="txt-crop-height-val">54.0%</span>
             </div>
             <input type="range" id="slider-crop-height" min="30" max="70" step="0.2" value="54.0">
-          </div>
-
-          <!-- Stamp Label Input -->
-          <div class="form-group">
-            <label class="form-label">Label Stamping SKU (Bisa Diubah)</label>
-            <input type="text" id="input-custom-label" class="form-input mono" value="1-AMP-ARY">
           </div>
         </div>
 
@@ -199,7 +228,8 @@
 
           <div class="form-group">
             <label class="form-label">Nama Toko Default</label>
-            <input type="text" id="input-default-shop-name" class="form-input" value="HERBAL TV OFFICIAL" placeholder="HERBAL TV OFFICIAL">
+            <input type="text" id="input-default-shop-name" class="form-input" value="HERBAL TV OFFICIAL"
+              placeholder="HERBAL TV OFFICIAL">
           </div>
         </div>
 
@@ -401,7 +431,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=11').then(reg => {
+        navigator.serviceWorker.register('sw.js?v=12').then(reg => {
           reg.update();
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;

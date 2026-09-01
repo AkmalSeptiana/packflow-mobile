@@ -379,6 +379,16 @@
       });
     }
 
+    // Copy buttons handlers
+    const btnCopyOrderNo = document.getElementById('btn-copy-order-no');
+    if (btnCopyOrderNo) btnCopyOrderNo.addEventListener('click', () => copyInputValue('input-order-no', 'No. Pesanan'));
+
+    const btnCopyResi = document.getElementById('btn-copy-resi');
+    if (btnCopyResi) btnCopyResi.addEventListener('click', () => copyInputValue('input-resi', 'No. Resi'));
+
+    const btnCopyLabel = document.getElementById('btn-copy-label');
+    if (btnCopyLabel) btnCopyLabel.addEventListener('click', () => copyInputValue('input-custom-label', 'Pelabelan SKU'));
+
     // Whitelist preset
     if (selectWhitelist) {
       selectWhitelist.addEventListener('change', (e) => {
@@ -797,7 +807,7 @@
           });
         });
 
-        if (parsedData.items.length === 0) {
+        if (parsedData.items.length === 0 && currentPdfDoc) {
           parsedData.items = [{ sku: 'AMP', name: 'Sampel Produk AMP', qty: 1 }];
           parsedData.totalQty = 1;
         }
@@ -827,7 +837,7 @@
       const parts = parsedData.items.map(i => `${i.qty}-${i.sku}`);
       parsedData.generatedLabel = `${parts.join('+')}-${suffix}`;
     } else {
-      parsedData.generatedLabel = `1-AMP-${suffix}`;
+      parsedData.generatedLabel = '';
     }
 
     if (inputCustomLabel) inputCustomLabel.value = parsedData.generatedLabel;
@@ -836,7 +846,11 @@
   }
 
   function updateTotalsFromStamp(text) {
-    if (!text) return;
+    if (!text) {
+      if (txtTotalSku) txtTotalSku.textContent = '-';
+      if (txtTotalQty) txtTotalQty.textContent = '-';
+      return;
+    }
     const suffix = (inputSuffix ? inputSuffix.value.trim() : 'ARY').toUpperCase();
     let clean = text.trim();
     if (suffix && clean.toUpperCase().endsWith('-' + suffix)) {
@@ -1228,6 +1242,35 @@ TANGERANG=TANGERANG`;
     e.preventDefault();
     deferredPrompt = e;
   });
+
+  // ── Copy Helper ──
+  function copyInputValue(inputId, labelName) {
+    const input = document.getElementById(inputId);
+    if (!input || !input.value.trim()) {
+      showToast(`⚠️ Tidak ada ${labelName} untuk disalin`, 'error');
+      return;
+    }
+    const val = input.value.trim();
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(val).then(() => {
+        showToast(`📋 ${labelName} berhasil disalin!`, 'success');
+      }).catch(() => {
+        fallbackCopyText(input, labelName);
+      });
+    } else {
+      fallbackCopyText(input, labelName);
+    }
+  }
+
+  function fallbackCopyText(input, labelName) {
+    input.select();
+    try {
+      document.execCommand('copy');
+      showToast(`📋 ${labelName} berhasil disalin!`, 'success');
+    } catch (err) {
+      showToast(`❌ Gagal menyalin ${labelName}`, 'error');
+    }
+  }
 
   // ── Toast ──
   let toastTimer = null;
