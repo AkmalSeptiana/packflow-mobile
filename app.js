@@ -319,7 +319,7 @@
       btnCropToggle.addEventListener('click', () => {
         isCropped = !isCropped;
         btnCropToggle.classList.toggle('active', isCropped);
-        btnCropToggle.textContent = isCropped ? '✂️ Mode Potong: ON' : '✂️ Mode Potong: OFF';
+        btnCropToggle.textContent = isCropped ? 'Mode Potong: ON' : 'Mode Potong: OFF';
         renderPdfPage();
       });
     }
