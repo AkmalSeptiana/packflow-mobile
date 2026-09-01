@@ -1193,16 +1193,6 @@ TANGERANG=TANGERANG`;
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    showToast('📱 Ketuk di sini untuk Install PackFlow ke HP!', 'info');
-    if (toastEl) {
-      toastEl.style.cursor = 'pointer';
-      toastEl.onclick = () => {
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-        }
-      };
-    }
   });
 
   // ── Toast ──
