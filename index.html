@@ -71,14 +71,6 @@
       <!-- ── Tab 1: Resi Viewer ── -->
       <div class="tab-panel active" id="panel-resi">
 
-        <!-- Upload Area (visible when no PDF) -->
-        <div class="upload-area" id="upload-area">
-          <input type="file" id="file-input-main" accept="application/pdf">
-          <span class="upload-icon">📄</span>
-          <div class="upload-title">Ketuk untuk buka file PDF Resi</div>
-          <div class="upload-sub">Pilih dari File Manager atau Download</div>
-        </div>
-
         <!-- Resi Info Summary -->
         <div class="card" id="card-resi-info">
           <div class="card-header">
@@ -114,21 +106,25 @@
             </div>
             <div class="metric-box">
               <span class="metric-label">SKU</span>
-              <span id="txt-total-sku" class="metric-value val-blue">0</span>
+              <span id="txt-total-sku" class="metric-value val-blue">-</span>
             </div>
             <div class="metric-box">
               <span class="metric-label">Qty</span>
-              <span id="txt-total-qty" class="metric-value val-orange">0</span>
+              <span id="txt-total-qty" class="metric-value val-orange">-</span>
             </div>
           </div>
         </div>
 
+        <!-- Upload Area (positioned below Informasi Resi) -->
+        <div class="upload-area" id="upload-area">
+          <input type="file" id="file-input-main" accept="application/pdf">
+          <span class="upload-icon">📄</span>
+          <div class="upload-title">Ketuk untuk buka file PDF Resi</div>
+          <div class="upload-sub">Pilih dari File Manager atau Download</div>
+        </div>
+
         <!-- PDF Viewer Canvas -->
-        <div class="viewer-container" id="viewer-container">
-          <div class="empty-state" id="viewer-empty">
-            <span class="empty-state-icon">📋</span>
-            <div class="empty-state-text">Buka file PDF resi untuk melihat preview</div>
-          </div>
+        <div class="viewer-container" id="viewer-container" style="display:none">
           <div class="canvas-scroll" id="canvas-scroll" style="display:none">
             <div class="canvas-wrapper" id="canvas-wrapper">
               <canvas id="pdf-canvas"></canvas>
@@ -405,7 +401,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=10').then(reg => {
+        navigator.serviceWorker.register('sw.js?v=11').then(reg => {
           reg.update();
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;

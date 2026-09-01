@@ -276,13 +276,15 @@
       currentPdfDoc = pdf;
       setDocStatus('ready', 'PDF Siap');
 
-      // Show canvas, hide empty + upload
-      uploadArea.style.display = 'none';
-      viewerEmpty.style.display = 'none';
-      canvasScroll.style.display = 'block';
-      cardCropControls.style.display = 'block';
+      // Show canvas, hide upload
+      if (uploadArea) uploadArea.style.display = 'none';
+      if (viewerContainer) viewerContainer.style.display = 'block';
+      if (viewerEmpty) viewerEmpty.style.display = 'none';
+      if (canvasScroll) canvasScroll.style.display = 'block';
+      if (cardCropControls) cardCropControls.style.display = 'block';
 
       extractTextAndParseData();
+      updateActionBarState();
       renderPdfPage();
     }).catch((err) => {
       console.error('[PackFlow Mobile] PDF load error:', err);
@@ -366,6 +368,7 @@
         const clean = e.target.value.replace(/\s+/g, '');
         e.target.value = clean;
         parsedData.resiNo = clean;
+        updateActionBarState();
       });
     }
 
@@ -574,12 +577,43 @@
   //  ACTION BUTTONS (Print & Telegram)
   // ══════════════════════════════════════════════════════════
 
+  const actionBar = document.getElementById('action-bar');
+
+  function updateActionBarState() {
+    if (!actionBar) return;
+    const hasPdf = !!currentPdfDoc;
+    const hasResi = !!(inputResi && inputResi.value.trim() !== '');
+    if (hasPdf || hasResi) {
+      actionBar.classList.remove('disabled');
+    } else {
+      actionBar.classList.add('disabled');
+    }
+  }
+
   function initActionButtons() {
+    updateActionBarState();
+
     const btnPrint = document.getElementById('btn-print');
-    if (btnPrint) btnPrint.addEventListener('click', () => window.print());
+    if (btnPrint) {
+      btnPrint.addEventListener('click', () => {
+        if (actionBar && actionBar.classList.contains('disabled')) {
+          showToast('⚠️ Silakan buka file PDF resi terlebih dahulu', 'error');
+          return;
+        }
+        window.print();
+      });
+    }
 
     const btnTelegram = document.getElementById('btn-telegram');
-    if (btnTelegram) btnTelegram.addEventListener('click', sendToTelegram);
+    if (btnTelegram) {
+      btnTelegram.addEventListener('click', () => {
+        if (actionBar && actionBar.classList.contains('disabled')) {
+          showToast('⚠️ Silakan buka file PDF resi terlebih dahulu', 'error');
+          return;
+        }
+        sendToTelegram();
+      });
+    }
   }
 
   // ══════════════════════════════════════════════════════════
@@ -824,8 +858,8 @@
       totalQty = parsedData.totalQty;
     }
 
-    if (txtTotalSku) txtTotalSku.textContent = totalSku;
-    if (txtTotalQty) txtTotalQty.textContent = `${totalQty} Pcs`;
+    if (txtTotalSku) txtTotalSku.textContent = (totalSku > 0) ? totalSku : '-';
+    if (txtTotalQty) txtTotalQty.textContent = (totalQty > 0) ? `${totalQty} Pcs` : '-';
   }
 
   // ══════════════════════════════════════════════════════════

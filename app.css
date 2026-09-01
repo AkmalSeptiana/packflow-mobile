@@ -787,6 +787,13 @@ body.settings-active .action-bar {
   display: none;
 }
 
+/* Muted / Dimmed Action Bar state when no PDF/Resi is loaded */
+.action-bar.disabled .action-btn {
+  opacity: 0.35;
+  filter: grayscale(90%);
+  box-shadow: none;
+}
+
 .btn-save-settings {
   display: flex;
   align-items: center;
