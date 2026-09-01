@@ -1,4 +1,4 @@
-const CACHE_NAME = 'packflow-mobile-v6';
+const CACHE_NAME = 'packflow-mobile-v7';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -36,27 +36,23 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Network-First Strategy for Instant Live Updates
 self.addEventListener('fetch', (event) => {
-  // Only cache GET requests within same origin
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
         }
-        const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-        return response;
-      });
-    }).catch(() => {
-      return caches.match('./index.html');
-    })
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
