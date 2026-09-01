@@ -1188,6 +1188,23 @@ TANGERANG=TANGERANG`;
     return str.replace(/^(KOTA|KAB\.|KABUPATEN)\s+/i, '').trim() || '-';
   }
 
+  // ── PWA Install Prompt Handler ──
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    showToast('📱 Ketuk di sini untuk Install PackFlow ke HP!', 'info');
+    if (toastEl) {
+      toastEl.style.cursor = 'pointer';
+      toastEl.onclick = () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+        }
+      };
+    }
+  });
+
   // ── Toast ──
   let toastTimer = null;
   function showToast(msg, type = 'info') {
