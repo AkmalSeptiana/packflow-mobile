@@ -1282,7 +1282,7 @@ body.settings-active .action-bar {
 /* ── Print Media Styles (Thermal Resi Label Print Only) ── */
 @media print {
   @page {
-    size: A5;
+    size: auto;
     margin: 0;
   }
 
@@ -1324,9 +1324,7 @@ body.settings-active .action-bar {
   }
 
   .viewer-container {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: flex-start !important;
+    display: block !important;
     background: #ffffff !important;
     border: none !important;
     box-shadow: none !important;
@@ -1340,13 +1338,17 @@ body.settings-active .action-bar {
   .canvas-scroll {
     display: block !important;
     overflow: visible !important;
-    width: auto !important;
-    margin: 0 auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .canvas-wrapper {
     display: block !important;
     position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
     margin: 0 auto !important;
     box-shadow: none !important;
     border: none !important;
@@ -1356,8 +1358,9 @@ body.settings-active .action-bar {
 
   #pdf-canvas {
     display: block !important;
-    max-width: 100% !important;
+    width: 100% !important;
     height: auto !important;
+    max-width: 100% !important;
     margin: 0 auto !important;
   }
 
@@ -1370,6 +1373,7 @@ body.settings-active .action-bar {
 
   #stamp-text {
     color: #dc2626 !important;
+    font-size: 3.2vw !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     text-shadow: 

@@ -1298,19 +1298,50 @@
   }
 
   function canvasToPdfBlob(canvas) {
-    const imgDataUrl = canvas.toDataURL('image/jpeg', 0.95);
-    const base64Data = imgDataUrl.split(',')[1];
-    const imgBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+    // 1. Scale down canvas if too huge (max 1000px width for clean sharp barcode)
+    let targetCanvas = canvas;
+    const MAX_W = 1000;
+    if (canvas.width > MAX_W) {
+      const scale = MAX_W / canvas.width;
+      const small = document.createElement('canvas');
+      small.width = MAX_W;
+      small.height = Math.round(canvas.height * scale);
+      const ctx = small.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(canvas, 0, 0, small.width, small.height);
+      targetCanvas = small;
+    }
 
-    const wPt = (canvas.width / 96) * 72;
-    const hPt = (canvas.height / 96) * 72;
+    // 2. Compress JPEG adaptively under 80KB
+    let quality = 0.50;
+    let imgDataUrl = targetCanvas.toDataURL('image/jpeg', quality);
+    let base64Data = imgDataUrl.split(',')[1];
+    let imgBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+
+    if (imgBytes.length > 80000) {
+      quality = 0.35;
+      imgDataUrl = targetCanvas.toDataURL('image/jpeg', quality);
+      base64Data = imgDataUrl.split(',')[1];
+      imgBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+    }
+
+    if (imgBytes.length > 80000) {
+      quality = 0.25;
+      imgDataUrl = targetCanvas.toDataURL('image/jpeg', quality);
+      base64Data = imgDataUrl.split(',')[1];
+      imgBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+    }
+
+    const wPt = (targetCanvas.width / 96) * 72;
+    const hPt = (targetCanvas.height / 96) * 72;
 
     const enc = new TextEncoder();
     const h = enc.encode(`%PDF-1.4\n`);
     const o1 = enc.encode(`1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n`);
     const o2 = enc.encode(`2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n`);
     const o3 = enc.encode(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${wPt.toFixed(2)} ${hPt.toFixed(2)}] /Resources << /XObject << /Im1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n`);
-    const o4h = enc.encode(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imgBytes.length} >>\nstream\n`);
+    const o4h = enc.encode(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${targetCanvas.width} /Height ${targetCanvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imgBytes.length} >>\nstream\n`);
     const o4f = enc.encode(`\nendstream\nendobj\n`);
     const sc = `q ${wPt.toFixed(2)} 0 0 ${hPt.toFixed(2)} 0 0 cm /Im1 Do Q`;
     const o5 = enc.encode(`5 0 obj\n<< /Length ${sc.length} >>\nstream\n${sc}\nendstream\nendobj\n`);
