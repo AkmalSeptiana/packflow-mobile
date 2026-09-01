@@ -96,7 +96,7 @@
           <div class="card-body" id="body-resi-info">
             <!-- No. Pesanan -->
             <div class="form-group">
-              <label class="form-label">No. Pesanan (Auto Deteksi / Manual)</label>
+              <label class="form-label"> No. Pesanan</label>
               <div class="input-with-btn">
                 <input type="text" id="input-order-no" class="form-input mono"
                   placeholder="Otomatis dari PDF / Ketik manual...">
@@ -112,9 +112,10 @@
 
             <!-- No. Resi -->
             <div class="form-group">
-              <label class="form-label">No. Resi (Auto Deteksi / Manual)</label>
+              <label class="form-label"> No. Resi</label>
               <div class="input-with-btn">
-                <input type="text" id="input-resi" class="form-input mono" placeholder="Otomatis terdeteksi dari PDF...">
+                <input type="text" id="input-resi" class="form-input mono"
+                  placeholder="Otomatis terdeteksi dari PDF...">
                 <button type="button" class="input-copy-btn" id="btn-copy-resi" title="Salin No. Resi">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -127,7 +128,7 @@
 
             <!-- Pelabelan SKU Stamp -->
             <div class="form-group">
-              <label class="form-label">Pelabelan / Label Stamp SKU (Bisa Diubah)</label>
+              <label class="form-label"> Pelabelan</label>
               <div class="input-with-btn">
                 <input type="text" id="input-custom-label" class="form-input mono"
                   placeholder="Otomatis dari PDF / Ketik manual...">
@@ -436,7 +437,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=14').then(reg => {
+        navigator.serviceWorker.register('sw.js?v=15').then(reg => {
           reg.update();
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;
