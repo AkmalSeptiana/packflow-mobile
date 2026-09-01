@@ -7,6 +7,19 @@
   "background_color": "#0c0f1a",
   "theme_color": "#0c0f1a",
   "orientation": "portrait",
+  "share_target": {
+    "action": "./index.html",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "pdf",
+          "accept": ["application/pdf", ".pdf"]
+        }
+      ]
+    }
+  },
   "icons": [
     {
       "src": "icons/icon48.png",

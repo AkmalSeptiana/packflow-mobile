@@ -95,7 +95,50 @@
     initEyeToggles();
     initDraggableStamp();
     initActionButtons();
+
+    // Check if we were opened via Web Share Target
+    checkSharedFile();
   });
+
+  // ── Web Share Target Receiver ──
+  async function checkSharedFile() {
+    // Listen for messages from service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'share-target-file') {
+          loadSharedPdfFromCache();
+        }
+      });
+    }
+
+    // Also check on load if URL has share-target param
+    if (window.location.search.includes('share-target')) {
+      // Small delay to let SW finish writing the cache
+      setTimeout(() => loadSharedPdfFromCache(), 500);
+    }
+  }
+
+  async function loadSharedPdfFromCache() {
+    try {
+      const cache = await caches.open('packflow-share-target');
+      const response = await cache.match('/shared-pdf');
+      if (response) {
+        const filename = response.headers.get('X-Filename') || 'shared.pdf';
+        setDocStatus('loading', `Memuat: ${filename}...`);
+        showToast(`📂 Menerima: ${filename}`, 'success');
+        const buffer = await response.arrayBuffer();
+        loadPdfFromBuffer(new Uint8Array(buffer));
+        // Clean up the shared file cache
+        await cache.delete('/shared-pdf');
+        // Clean URL params
+        if (window.history.replaceState) {
+          window.history.replaceState({}, '', './index.html');
+        }
+      }
+    } catch (err) {
+      console.error('[PackFlow] Share target load error:', err);
+    }
+  }
 
   // ── Load Saved Settings from localStorage ──
   function loadSavedSettings() {
@@ -585,6 +628,236 @@
   }
 
   // ══════════════════════════════════════════════════════════
+  //  COMPACT PDF GENERATOR (< 80KB, A5 Paper)
+  // ══════════════════════════════════════════════════════════
+
+  async function generateCompactPdf() {
+    if (!pdfCanvas) { showToast('⚠️ Tidak ada resi untuk di-print', 'error'); return; }
+
+    showToast('⏳ Membuat PDF resi...', 'info');
+
+    // Create a composite canvas: resi + stamp overlay
+    const compositeCanvas = document.createElement('canvas');
+    compositeCanvas.width = pdfCanvas.width;
+    compositeCanvas.height = pdfCanvas.height;
+    const ctx = compositeCanvas.getContext('2d');
+
+    // Draw the resi canvas
+    ctx.drawImage(pdfCanvas, 0, 0);
+
+    // Draw the stamp text on top
+    if (stampOverlay && stampText && stampText.textContent) {
+      const wrapperRect = canvasWrapper.getBoundingClientRect();
+      const stampRect = stampOverlay.getBoundingClientRect();
+      const canvasRect = pdfCanvas.getBoundingClientRect();
+
+      // Calculate stamp position relative to canvas
+      const scaleX = pdfCanvas.width / canvasRect.width;
+      const scaleY = pdfCanvas.height / canvasRect.height;
+      const stampX = (stampRect.left - canvasRect.left) * scaleX;
+      const stampY = (stampRect.top - canvasRect.top) * scaleY;
+
+      // Get stamp computed style
+      const stampStyle = window.getComputedStyle(stampText);
+      const fontSizePx = parseFloat(stampStyle.fontSize) * scaleX;
+
+      ctx.save();
+      ctx.font = `900 ${fontSizePx}px ${stampStyle.fontFamily}`;
+      ctx.textBaseline = 'top';
+
+      // White outline
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = fontSizePx * 0.12;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(stampText.textContent, stampX, stampY);
+
+      // Red text
+      ctx.fillStyle = '#dc2626';
+      ctx.fillText(stampText.textContent, stampX, stampY);
+      ctx.restore();
+    }
+
+    // Convert to compressed JPEG blob
+    const jpegQuality = 0.55; // Start with moderate quality
+    let blob = await new Promise(resolve => compositeCanvas.toBlob(resolve, 'image/jpeg', jpegQuality));
+
+    // If still too large, reduce quality further
+    if (blob.size > 80000) {
+      blob = await new Promise(resolve => compositeCanvas.toBlob(resolve, 'image/jpeg', 0.40));
+    }
+    if (blob.size > 80000) {
+      blob = await new Promise(resolve => compositeCanvas.toBlob(resolve, 'image/jpeg', 0.30));
+    }
+
+    // A5 dimensions in points (1 pt = 1/72 inch)
+    const A5_W = 419.53; // 148mm
+    const A5_H = 595.28; // 210mm
+
+    // Build a minimal PDF manually (no library needed)
+    const imgData = await blobToBase64(blob);
+    const imgWidth = compositeCanvas.width;
+    const imgHeight = compositeCanvas.height;
+
+    // Fit image to A5 width with padding
+    const padding = 14; // 14pt padding on sides
+    const availW = A5_W - padding * 2;
+    const scale = availW / imgWidth;
+    const scaledW = imgWidth * scale;
+    const scaledH = imgHeight * scale;
+
+    // Center vertically
+    const offsetY = Math.max(padding, (A5_H - scaledH) / 2);
+
+    const pdfBytes = buildMinimalPdf(imgData, imgWidth, imgHeight, A5_W, A5_H, padding, offsetY, scaledW, scaledH);
+
+    // Create filename
+    const resi = (inputResi && inputResi.value.trim()) || 'resi';
+    const label = (inputCustomLabel && inputCustomLabel.value.trim()) || '';
+    const fileName = label ? `${resi}_${label}.pdf` : `${resi}.pdf`;
+
+    // Download or share
+    const fileBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const fileSizeKB = (fileBlob.size / 1024).toFixed(1);
+
+    if (navigator.share && navigator.canShare) {
+      const file = new File([fileBlob], fileName, { type: 'application/pdf' });
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'Resi PackFlow' });
+          showToast(`📤 PDF dibagikan (${fileSizeKB} KB)`, 'success');
+          return;
+        } catch (e) {
+          if (e.name === 'AbortError') return; // User cancelled
+        }
+      }
+    }
+
+    // Fallback: download
+    const url = URL.createObjectURL(fileBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`📥 PDF disimpan (${fileSizeKB} KB)`, 'success');
+  }
+
+  function blobToBase64(blob) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(',')[1]);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  function buildMinimalPdf(imgBase64, imgW, imgH, pageW, pageH, padX, padY, dispW, dispH) {
+    // Build a raw PDF with embedded JPEG — extremely compact
+    const imgBytes = atob(imgBase64);
+    const imgLength = imgBytes.length;
+
+    const objects = [];
+    let objCount = 0;
+
+    function addObj(content) {
+      objCount++;
+      objects.push({ id: objCount, content });
+      return objCount;
+    }
+
+    // 1: Catalog
+    const catalogId = addObj('<< /Type /Catalog /Pages 2 0 R >>');
+    // 2: Pages
+    const pagesId = addObj(`<< /Type /Pages /Kids [3 0 R] /Count 1 >>`);
+    // 3: Page
+    const pageId = addObj(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW.toFixed(2)} ${pageH.toFixed(2)}] /Contents 4 0 R /Resources << /XObject << /Img 5 0 R >> >> >>`);
+    // 4: Content stream
+    const cmds = `q ${dispW.toFixed(2)} 0 0 ${dispH.toFixed(2)} ${padX.toFixed(2)} ${(pageH - padY - dispH).toFixed(2)} cm /Img Do Q`;
+    const contentId = addObj(`<< /Length ${cmds.length} >>\nstream\n${cmds}\nendstream`);
+    // 5: Image XObject
+    const imgObjHeader = `<< /Type /XObject /Subtype /Image /Width ${imgW} /Height ${imgH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imgLength} >>`;
+    const imgObjId = addObj(null); // placeholder
+
+    // Build PDF bytes
+    let pdf = '%PDF-1.4\n';
+    const offsets = [];
+
+    for (let i = 0; i < objects.length; i++) {
+      offsets.push(pdf.length);
+      const obj = objects[i];
+      if (obj.id === imgObjId) {
+        pdf += `${obj.id} 0 obj\n${imgObjHeader}\nstream\n`;
+        // We'll handle binary separately
+      } else {
+        pdf += `${obj.id} 0 obj\n${obj.content}\nendobj\n`;
+      }
+    }
+
+    // Convert string part to bytes, then append image binary, then xref
+    const encoder = new TextEncoder();
+    const preImgBytes = encoder.encode(pdf);
+    const postStream = encoder.encode('\nendstream\nendobj\n');
+
+    // Build xref after we know all offsets
+    const xrefOffset = preImgBytes.length + imgLength + postStream.length;
+    let xref = `xref\n0 ${objCount + 1}\n`;
+    xref += '0000000000 65535 f \n';
+
+    // Recalculate actual byte offsets
+    const parts = [];
+    let currentOffset = 0;
+    const actualOffsets = [];
+    const pdfHeader = '%PDF-1.4\n';
+    currentOffset = pdfHeader.length;
+
+    for (let i = 0; i < objects.length; i++) {
+      actualOffsets.push(currentOffset);
+      const obj = objects[i];
+      if (obj.id === imgObjId) {
+        const header = `${obj.id} 0 obj\n${imgObjHeader}\nstream\n`;
+        currentOffset += header.length + imgLength + '\nendstream\nendobj\n'.length;
+      } else {
+        const entry = `${obj.id} 0 obj\n${obj.content}\nendobj\n`;
+        currentOffset += entry.length;
+      }
+    }
+
+    const xrefStart = currentOffset;
+    xref = `xref\n0 ${objCount + 1}\n`;
+    xref += '0000000000 65535 f \n';
+    for (let i = 0; i < actualOffsets.length; i++) {
+      xref += String(actualOffsets[i]).padStart(10, '0') + ' 00000 n \n';
+    }
+    xref += `trailer\n<< /Size ${objCount + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`;
+
+    // Assemble final PDF as Uint8Array
+    let finalPdf = pdfHeader;
+    for (let i = 0; i < objects.length; i++) {
+      const obj = objects[i];
+      if (obj.id === imgObjId) {
+        finalPdf += `${obj.id} 0 obj\n${imgObjHeader}\nstream\n`;
+      } else {
+        finalPdf += `${obj.id} 0 obj\n${obj.content}\nendobj\n`;
+      }
+    }
+
+    const beforeImg = encoder.encode(finalPdf);
+    const afterImg = encoder.encode('\nendstream\nendobj\n' + xref);
+
+    // Combine: beforeImg + rawJpegBytes + afterImg
+    const imgRaw = new Uint8Array(imgLength);
+    for (let i = 0; i < imgLength; i++) {
+      imgRaw[i] = imgBytes.charCodeAt(i);
+    }
+
+    const result = new Uint8Array(beforeImg.length + imgRaw.length + afterImg.length);
+    result.set(beforeImg, 0);
+    result.set(imgRaw, beforeImg.length);
+    result.set(afterImg, beforeImg.length + imgRaw.length);
+
+    return result;
+  }
+
+  // ══════════════════════════════════════════════════════════
   //  ACTION BUTTONS (Print & Telegram)
   // ══════════════════════════════════════════════════════════
 
@@ -606,12 +879,12 @@
 
     const btnPrint = document.getElementById('btn-print');
     if (btnPrint) {
-      btnPrint.addEventListener('click', () => {
+      btnPrint.addEventListener('click', async () => {
         if (actionBar && actionBar.classList.contains('disabled')) {
           showToast('⚠️ Silakan buka file PDF resi terlebih dahulu', 'error');
           return;
         }
-        window.print();
+        await generateCompactPdf();
       });
     }
 
