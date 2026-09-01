@@ -1278,3 +1278,104 @@ body.settings-active .action-bar {
   background: var(--border-subtle);
   border-radius: var(--radius-full);
 }
+
+/* ── Print Media Styles (Thermal Resi Label Print Only) ── */
+@media print {
+  @page {
+    size: auto;
+    margin: 0;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: visible !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .app-header,
+  .card,
+  .upload-area,
+  .crop-controls-strip,
+  .action-bar,
+  .tab-bar,
+  .toast,
+  .credit-footer,
+  .input-copy-btn,
+  .toggle-arrow {
+    display: none !important;
+  }
+
+  .app,
+  .tab-content-area,
+  .tab-panel {
+    display: block !important;
+    position: static !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    background: transparent !important;
+  }
+
+  .viewer-container {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .canvas-scroll {
+    display: block !important;
+    overflow: visible !important;
+    width: auto !important;
+    margin: 0 auto !important;
+  }
+
+  .canvas-wrapper {
+    display: block !important;
+    position: relative !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  #pdf-canvas {
+    display: block !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 0 auto !important;
+  }
+
+  .stamp-overlay {
+    position: absolute !important;
+    z-index: 9999 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  #stamp-text {
+    color: #dc2626 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    text-shadow: 
+      1px 1px 0 #fff,
+      -1px -1px 0 #fff,
+      1px -1px 0 #fff,
+      -1px 1px 0 #fff !important;
+  }
+}
