@@ -1282,7 +1282,7 @@ body.settings-active .action-bar {
 /* ── Print Media Styles (Thermal Resi Label Print Only) ── */
 @media print {
   @page {
-    size: auto;
+    size: A5;
     margin: 0;
   }
 
