@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <meta name="theme-color" content="#0c0f1a">
+  <meta name="theme-color" content="#0c0f1a" id="meta-theme-color">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="PackFlow AWB Workspace Mobile — Crop, Labeling & Kirim Resi dari HP">
@@ -434,7 +434,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=22').then(reg => {
+        navigator.serviceWorker.register('sw.js?v=23').then(reg => {
           reg.update();
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;

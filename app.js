@@ -87,6 +87,7 @@
   // ══════════════════════════════════════════════════════════
 
   window.addEventListener('load', () => {
+    initThemeAutoListener();
     loadSavedSettings();
     initTabNavigation();
     initCollapsibles();
@@ -99,6 +100,30 @@
     // Check if we were opened via Web Share Target
     checkSharedFile();
   });
+
+  // ── Auto-Sync Theme with Device Dark/Light Mode ──
+  function initThemeAutoListener() {
+    if (!window.matchMedia) return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    function updateTheme(e) {
+      const isDark = e.matches;
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      const metaTheme = document.getElementById('meta-theme-color');
+      if (metaTheme) {
+        metaTheme.setAttribute('content', isDark ? '#0c0f1a' : '#f1f5f9');
+      }
+    }
+
+    updateTheme(mediaQuery);
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', updateTheme);
+    } else if (mediaQuery.addListener) {
+      mediaQuery.addListener(updateTheme);
+    }
+  }
 
   // ── Web Share Target Receiver ──
   async function checkSharedFile() {
