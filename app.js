@@ -1717,7 +1717,6 @@ TANGERANG=TANGERANG`;
           deferredPrompt.prompt();
           const choiceResult = await deferredPrompt.userChoice;
           if (choiceResult && choiceResult.outcome === 'accepted') {
-            localStorage.setItem('packflow_install_dismissed', 'true');
             hidePwaModal();
             showToast('🎉 PackFlow Mobile berhasil dipasang!', 'success');
           }
@@ -1740,7 +1739,6 @@ TANGERANG=TANGERANG`;
 
     window.addEventListener('appinstalled', () => {
       deferredPrompt = null;
-      localStorage.setItem('packflow_install_dismissed', 'true');
       hidePwaModal();
       updateInstallUiState();
       showToast('🎉 PackFlow Mobile berhasil dipasang ke HP!', 'success');
@@ -1762,17 +1760,9 @@ TANGERANG=TANGERANG`;
       btnPwaInstallNow.addEventListener('click', handleInstallClick);
     }
 
-    if (btnPwaDismiss) {
-      btnPwaDismiss.addEventListener('click', () => {
-        hidePwaModal();
-        localStorage.setItem('packflow_install_dismissed', 'true');
-      });
-    }
-
     if (pwaModalClose) {
       pwaModalClose.addEventListener('click', () => {
         hidePwaModal();
-        localStorage.setItem('packflow_install_dismissed', 'true');
       });
     }
 
@@ -1780,7 +1770,6 @@ TANGERANG=TANGERANG`;
       pwaOverlay.addEventListener('click', (e) => {
         if (e.target === pwaOverlay) {
           hidePwaModal();
-          localStorage.setItem('packflow_install_dismissed', 'true');
         }
       });
     }
@@ -1788,14 +1777,14 @@ TANGERANG=TANGERANG`;
     // Initial state check
     updateInstallUiState();
 
-    // Auto-prompt on FIRST VISIT if not already running in standalone mode
+    // Hapus data dismiss lama agar tidak pernah tercegah
+    localStorage.removeItem('packflow_install_dismissed');
+
+    // Popup WAJIB MUNCUL setiap kali web dibuka / direload selama belum terpasang (bukan standalone PWA)
     if (!isRunningStandalone()) {
-      const dismissed = localStorage.getItem('packflow_install_dismissed');
-      if (!dismissed) {
-        setTimeout(() => {
-          showPwaModal();
-        }, 700);
-      }
+      setTimeout(() => {
+        showPwaModal();
+      }, 500);
     }
   }
 

@@ -492,11 +492,11 @@
           </div>
           <div class="pwa-title-area">
             <div class="pwa-badge-row">
-              <span class="pwa-badge-pill">✨ Versi Mobile</span>
+              <span class="pwa-badge-pill" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.4);">⚠️ Wajib Di-Install</span>
               <span class="pwa-badge-pill pwa-badge-pwa">PWA App</span>
             </div>
             <h2 class="pwa-modal-title" id="pwa-modal-title">Pasang PackFlow ke HP</h2>
-            <p class="pwa-modal-subtitle">Gunakan seperti aplikasi native di Android & iPhone</p>
+            <p class="pwa-modal-subtitle">Aplikasi wajib dipasang ke layar utama HP agar dapat digunakan</p>
           </div>
         </div>
 
@@ -554,9 +554,9 @@
             </svg>
             <span id="txt-pwa-install-btn">Pasang Aplikasi Sekarang</span>
           </button>
-          <button class="pwa-btn-secondary" id="btn-pwa-dismiss">
-            Nanti Saja
-          </button>
+          <div style="text-align:center;font-size:0.75rem;color:var(--text-secondary);margin-top:6px;line-height:1.4">
+            ⚠️ <em>PackFlow wajib dipasang ke layar utama HP sebelum digunakan.</em>
+          </div>
         </div>
 
       </div>
@@ -567,7 +567,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=24').then(reg => {
+        navigator.serviceWorker.register('sw.js?v=25').then(reg => {
           reg.update();
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;
