@@ -1581,36 +1581,13 @@ body.settings-active .action-bar {
   margin: 0 auto 14px auto;
 }
 
-.pwa-modal-close {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.pwa-modal-close:active {
-  transform: scale(0.9);
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-}
-
 /* Header Area */
 .pwa-modal-header {
   display: flex;
   align-items: center;
   gap: 14px;
   margin-bottom: 16px;
-  padding-right: 28px;
+  padding-right: 0;
 }
 
 .pwa-icon-wrapper {

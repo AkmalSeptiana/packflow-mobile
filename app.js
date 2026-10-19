@@ -1760,20 +1760,6 @@ TANGERANG=TANGERANG`;
       btnPwaInstallNow.addEventListener('click', handleInstallClick);
     }
 
-    if (pwaModalClose) {
-      pwaModalClose.addEventListener('click', () => {
-        hidePwaModal();
-      });
-    }
-
-    if (pwaOverlay) {
-      pwaOverlay.addEventListener('click', (e) => {
-        if (e.target === pwaOverlay) {
-          hidePwaModal();
-        }
-      });
-    }
-
     // Initial state check
     updateInstallUiState();
 
