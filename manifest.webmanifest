@@ -2,7 +2,9 @@
   "name": "PackFlow Mobile",
   "short_name": "PackFlow",
   "description": "Helper Pemotongan, Stamping SKU & Pelabelan Resi AWB Mobile",
+  "id": "./index.html",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0c0f1a",
   "theme_color": "#0c0f1a",
@@ -35,13 +37,25 @@
       "src": "icons/logo.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icons/logo.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

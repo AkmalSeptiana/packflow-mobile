@@ -99,6 +99,9 @@
 
     // Check if we were opened via Web Share Target
     checkSharedFile();
+
+    // PWA Installation Popup & Controller
+    initPwaInstall();
   });
 
   // ── Auto-Sync Theme with Device Dark/Light Mode ──
@@ -1577,12 +1580,224 @@ TANGERANG=TANGERANG`;
     return str.replace(/^(KOTA|KAB\.|KABUPATEN)\s+/i, '').trim() || '-';
   }
 
-  // ── PWA Install Prompt Handler ──
+  // ── PWA Installation & First-Time Prompt Controller ──
   let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
+
+  function initPwaInstall() {
+    const btnHeaderInstall = document.getElementById('btn-header-install');
+    const pwaOverlay = document.getElementById('pwa-install-overlay');
+    const pwaModalClose = document.getElementById('pwa-modal-close');
+    const btnPwaInstallNow = document.getElementById('btn-pwa-install-now');
+    const btnPwaDismiss = document.getElementById('btn-pwa-dismiss');
+    const btnSettingsInstallPwa = document.getElementById('btn-settings-install-pwa');
+    const badgePwaStatus = document.getElementById('badge-pwa-status');
+    const pwaIabNotice = document.getElementById('pwa-iab-notice');
+    const pwaInstructions = document.getElementById('pwa-instructions');
+    const pwaInstructionsHeader = document.getElementById('pwa-instructions-header');
+    const pwaStepsList = document.getElementById('pwa-steps-list');
+    const txtPwaInstallBtn = document.getElementById('txt-pwa-install-btn');
+
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPhone|iPad|iPod/i.test(ua) && !window.MSStream;
+    const isInAppBrowser = /FB_IAB|FB4A|FBIOS|Instagram|Line|Twitter|Telegram/i.test(ua);
+
+    function isRunningStandalone() {
+      return (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true ||
+        document.referrer.includes('android-app://')
+      );
+    }
+
+    function updateInstallUiState() {
+      const standalone = isRunningStandalone();
+      if (btnHeaderInstall) {
+        btnHeaderInstall.style.display = standalone ? 'none' : 'inline-flex';
+      }
+      if (badgePwaStatus) {
+        if (standalone) {
+          badgePwaStatus.className = 'card-badge badge-green';
+          badgePwaStatus.textContent = 'Terpasang';
+        } else {
+          badgePwaStatus.className = 'card-badge badge-blue';
+          badgePwaStatus.textContent = 'Tersedia';
+        }
+      }
+      if (btnSettingsInstallPwa) {
+        if (standalone) {
+          btnSettingsInstallPwa.innerHTML = '✅ Aplikasi Telah Terpasang di HP';
+          btnSettingsInstallPwa.disabled = true;
+          btnSettingsInstallPwa.style.opacity = '0.65';
+          btnSettingsInstallPwa.style.cursor = 'default';
+        } else {
+          btnSettingsInstallPwa.disabled = false;
+          btnSettingsInstallPwa.style.opacity = '1';
+          btnSettingsInstallPwa.style.cursor = 'pointer';
+        }
+      }
+      if (standalone && pwaOverlay && pwaOverlay.classList.contains('show')) {
+        hidePwaModal();
+      }
+    }
+
+    function showPwaModal() {
+      if (!pwaOverlay) return;
+
+      // Check if in-app browser
+      if (pwaIabNotice) {
+        pwaIabNotice.style.display = isInAppBrowser ? 'flex' : 'none';
+      }
+
+      // Configure instructions for iOS vs Android
+      if (isIOS) {
+        renderIosInstructions();
+      } else if (!deferredPrompt) {
+        if (pwaInstructions) pwaInstructions.style.display = 'none';
+        if (txtPwaInstallBtn) txtPwaInstallBtn.textContent = 'Pasang Aplikasi Sekarang';
+      } else {
+        if (pwaInstructions) pwaInstructions.style.display = 'none';
+        if (txtPwaInstallBtn) txtPwaInstallBtn.textContent = 'Pasang Aplikasi Sekarang';
+      }
+
+      pwaOverlay.classList.add('show');
+      pwaOverlay.setAttribute('aria-hidden', 'false');
+    }
+
+    function hidePwaModal() {
+      if (!pwaOverlay) return;
+      pwaOverlay.classList.remove('show');
+      pwaOverlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function renderIosInstructions() {
+      if (!pwaInstructions || !pwaInstructionsHeader || !pwaStepsList) return;
+      pwaInstructionsHeader.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+          <line x1="12" y1="18" x2="12.01" y2="18"/>
+        </svg>
+        Panduan Pasang di iPhone / iPad (Safari)
+      `;
+      pwaStepsList.innerHTML = `
+        <li>Ketuk tombol <strong>Bagikan (Share)</strong> <svg style="display:inline-block;vertical-align:middle;margin:0 2px" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> pada bilah bawah browser Safari.</li>
+        <li>Gulir menu dan pilih <strong>"Tambah ke Layar Utama" (Add to Home Screen)</strong> <svg style="display:inline-block;vertical-align:middle;margin:0 2px" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>.</li>
+        <li>Ketuk <strong>"Tambah" (Add)</strong> di pojok kanan atas layar. Selesai!</li>
+      `;
+      pwaInstructions.style.display = 'block';
+      if (txtPwaInstallBtn) txtPwaInstallBtn.textContent = 'Saya Mengerti (Tutup)';
+    }
+
+    function renderAndroidManualInstructions() {
+      if (!pwaInstructions || !pwaInstructionsHeader || !pwaStepsList) return;
+      pwaInstructionsHeader.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="1"/>
+          <circle cx="12" cy="5" r="1"/>
+          <circle cx="12" cy="19" r="1"/>
+        </svg>
+        Langkah Pasang Cepat di Browser HP
+      `;
+      pwaStepsList.innerHTML = `
+        <li>Ketuk tombol menu <strong>titik tiga (⋮)</strong> di pojok kanan atas browser Anda.</li>
+        <li>Pilih menu <strong>"Instal aplikasi"</strong> atau <strong>"Tambahkan ke Layar Utama"</strong>.</li>
+        <li>Konfirmasi dengan mengetuk <strong>"Instal"</strong>. Ikon PackFlow akan langsung muncul di layar utama HP Anda!</li>
+      `;
+      pwaInstructions.style.display = 'block';
+      if (txtPwaInstallBtn) txtPwaInstallBtn.textContent = 'Saya Mengerti (Tutup)';
+    }
+
+    async function handleInstallClick() {
+      if (isIOS) {
+        hidePwaModal();
+        return;
+      }
+
+      if (deferredPrompt) {
+        try {
+          deferredPrompt.prompt();
+          const choiceResult = await deferredPrompt.userChoice;
+          if (choiceResult && choiceResult.outcome === 'accepted') {
+            localStorage.setItem('packflow_install_dismissed', 'true');
+            hidePwaModal();
+            showToast('🎉 PackFlow Mobile berhasil dipasang!', 'success');
+          }
+          deferredPrompt = null;
+        } catch (err) {
+          console.error('[PackFlow PWA] Prompt error:', err);
+          renderAndroidManualInstructions();
+        }
+      } else {
+        renderAndroidManualInstructions();
+      }
+    }
+
+    // Event Listeners for PWA
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      updateInstallUiState();
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      localStorage.setItem('packflow_install_dismissed', 'true');
+      hidePwaModal();
+      updateInstallUiState();
+      showToast('🎉 PackFlow Mobile berhasil dipasang ke HP!', 'success');
+    });
+
+    if (btnHeaderInstall) {
+      btnHeaderInstall.addEventListener('click', () => {
+        showPwaModal();
+      });
+    }
+
+    if (btnSettingsInstallPwa) {
+      btnSettingsInstallPwa.addEventListener('click', () => {
+        showPwaModal();
+      });
+    }
+
+    if (btnPwaInstallNow) {
+      btnPwaInstallNow.addEventListener('click', handleInstallClick);
+    }
+
+    if (btnPwaDismiss) {
+      btnPwaDismiss.addEventListener('click', () => {
+        hidePwaModal();
+        localStorage.setItem('packflow_install_dismissed', 'true');
+      });
+    }
+
+    if (pwaModalClose) {
+      pwaModalClose.addEventListener('click', () => {
+        hidePwaModal();
+        localStorage.setItem('packflow_install_dismissed', 'true');
+      });
+    }
+
+    if (pwaOverlay) {
+      pwaOverlay.addEventListener('click', (e) => {
+        if (e.target === pwaOverlay) {
+          hidePwaModal();
+          localStorage.setItem('packflow_install_dismissed', 'true');
+        }
+      });
+    }
+
+    // Initial state check
+    updateInstallUiState();
+
+    // Auto-prompt on FIRST VISIT if not already running in standalone mode
+    if (!isRunningStandalone()) {
+      const dismissed = localStorage.getItem('packflow_install_dismissed');
+      if (!dismissed) {
+        setTimeout(() => {
+          showPwaModal();
+        }, 700);
+      }
+    }
+  }
 
   // ── Copy Helper ──
   function copyInputValue(inputId, labelName) {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'packflow-mobile-v23';
+const CACHE_NAME = 'packflow-mobile-v24';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -9,7 +9,8 @@ const ASSETS_TO_CACHE = [
   './manifest.webmanifest',
   './icons/icon16.png',
   './icons/icon48.png',
-  './icons/icon128.png'
+  './icons/icon128.png',
+  './icons/logo.png'
 ];
 
 self.addEventListener('install', (event) => {
